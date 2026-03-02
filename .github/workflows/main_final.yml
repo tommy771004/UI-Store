@@ -26,16 +26,24 @@ jobs:
           # 2. 偵錯用：列出目前所有檔案，確認 .NET 專案有出現
           dir 
 
-      - name: Commit and Push changes
+       - name: Commit and Push changes
         run: |
+          # 1. 基本設定
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 強制加入所有新產生的檔案
+          # 2. 確保在推送到遠端前，先抓取最新變動並合併 (Rebase)
+          # 這可以解決 "fetch first" 的錯誤
+          git pull origin main --rebase
+
+          # 3. 加入新產生的檔案
           git add .
           
-          # 3. [skip ci] 避免 Action 再次被觸發導致無限循環
-          git commit -m "Automated .NET project generation [skip ci]" || echo "No changes to commit"
-          
-          # 推送回 main 分支
-          git push origin main
+          # 4. 提交。如果沒檔案變動就跳過，避免報錯
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Automated .NET project generation [skip ci]"
+            # 5. 推送回 main
+            git push origin main
+          else
+            echo "No changes to commit"
+          fi
