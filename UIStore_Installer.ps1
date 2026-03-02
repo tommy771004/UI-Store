@@ -1305,27 +1305,6 @@ app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Inde
 app.Run();
 '@ -Encoding UTF8
 
-# ==========================================
-# 建立資料庫遷移 (修復：不使用 EnsureCreated)
-# ==========================================
-Write-Host "[*] 建立資料庫遷移..." -ForegroundColor Yellow
-try {
-    dotnet ef migrations add InitialCreate 2>&1 | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "[✓] Migration 已建立" -ForegroundColor Green
-        
-        dotnet ef database update 2>&1 | Out-Null
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "[✓] 資料庫已更新" -ForegroundColor Green
-        } else {
-            Write-Host "[!] 資料庫更新失敗，請手動執行: dotnet ef database update" -ForegroundColor Yellow
-        }
-    } else {
-        Write-Host "[!] Migration 建立失敗，請手動執行: dotnet ef migrations add InitialCreate" -ForegroundColor Yellow
-    }
-} catch {
-    Write-Host "[!] 請手動執行 migrations" -ForegroundColor Yellow
-}
 
 # ==========================================
 # HTTPS 憑證 (修復：信任開發憑證)
