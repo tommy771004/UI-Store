@@ -1,0 +1,90 @@
+@* Validation extras: password strength meter, email availability check, animated error icon *@
+<script>
+    (function($){
+        $(function(){
+            // validate on keyup/input for faster feedback
+            if($.validator) {
+                $.validator.setDefaults({
+                    onkeyup: function(element) { $(element).valid(); },
+                    onfocusout: function(element) { $(element).valid(); }
+                });
+            }
+
+            // focus first invalid field on submit
+            $(document).on('submit', 'form', function(e){
+                var $form = $(this);
+                if($form.valid && !$form.valid()){
+                    var $field = $form.find(':input').filter(function(){ return $(this).hasClass('input-validation-error') || $(this).next('.field-validation-error').length; }).first();
+                    if($field && $field.length) { $field.focus(); }
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // validate on input/change for inputs bound by unobtrusive
+            $(document).on('input change', 'form input, form textarea, form select', function(){
+                var $f = $(this).closest('form');
+                if($f.length && $.validator) { $(this).valid(); }
+            });
+
+            // show animated error icon beside validation messages
+            function showFieldErrorIcon($input) {
+                var $icon = $input.siblings('.field-error-icon');
+                if(!$icon || !$icon.length) {
+                    $icon = $('<span class="field-error-icon" aria-hidden="true">!</span>');
+                    $input.after($icon);
+                }
+                $icon.addClass('field-error-pulse');
+                setTimeout(function(){ $icon.removeClass('field-error-pulse'); }, 900);
+            }
+
+            // password strength checker with micro-interactions
+            function calcPasswordStrength(pw) {
+                var score = 0;
+                if(!pw) return score;
+                if(pw.length >= 8) score += 1;
+                if(/[A-Z]/.test(pw)) score += 1;
+                if(/[0-9]/.test(pw)) score += 1;
+                if(/[^A-Za-z0-9]/.test(pw)) score += 1;
+                return score; // 0-4
+            }
+
+            // email availability check (debounced)
+            var emailTimer = null;
+            function checkEmailAvailability($input) {
+                var email = $input.val();
+                var $badge = $input.siblings('.email-availability');
+                if(!email) { if($badge && $badge.length) $badge.remove(); return; }
+                if(emailTimer) clearTimeout(emailTimer);
+                emailTimer = setTimeout(function(){
+                    $.get('/Account/CheckEmail', { email: email }).done(function(res){
+                        if(!$badge || !$badge.length) { $badge = $('<span class="email-availability" aria-live="polite"></span>'); $input.after($badge); }
+                        if(res && res.available) { $badge.text('可使用').removeClass('email-taken').addClass('email-available'); }
+                        else { $badge.text('已被使用').removeClass('email-available').addClass('email-taken'); }
+                    }).fail(function(){ if(!$badge || !$badge.length) { $badge = $('<span class="email-availability" aria-live="polite"></span>'); $input.after($badge); } $badge.text('檢查失敗').removeClass('email-available').addClass('email-taken'); });
+                }, 600);
+            }
+
+            // attach password strength UI & email check for inputs with data-* attributes
+            $(document).on('input', 'input[data-password-strength]', function(){
+                var $this = $(this);
+                var val = $this.val(); var score = calcPasswordStrength(val);
+                var $meter = $this.siblings('.pw-strength');
+                if(!$meter || !$meter.length) {
+                    $meter = $('<div class="pw-strength" aria-hidden="true"><i></i></div>');
+                    $this.after($meter);
+                }
+                var $bar = $meter.children('i');
+                var pct = (score/4)*100; $bar.css('width', pct + '%');
+                $bar.removeClass('pw-weak pw-medium pw-strong');
+                if(score <= 1) $bar.addClass('pw-weak');
+                else if(score == 2 || score ==3) $bar.addClass('pw-medium');
+                else $bar.addClass('pw-strong');
+                var $text = $this.siblings('.pw-text'); if(!$text || !$text.length) { $text = $('<div class="pw-text" aria-live="polite"></div>'); $meter.after($text); }
+                $text.text(score <=1 ? '弱（至少 8 字元，含大小寫與數字）' : (score==2||score==3) ? '中等' : '強');
+            });
+
+            $(document).on('input', 'input[data-email-check]', function(){ checkEmailAvailability($(this)); });
+        });
+    })(jQuery);
+</script>
