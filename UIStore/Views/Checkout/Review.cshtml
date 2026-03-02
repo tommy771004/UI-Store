@@ -1,0 +1,26 @@
+@model UIStore.Models.OrderReviewViewModel
+<div style="max-width:800px;margin:40px auto;background:var(--bg-secondary);padding:40px;border-radius:var(--radius-lg);box-shadow:var(--shadow-hover);">
+    <h2 style="font-size: 28px; margin-bottom:30px;">結帳與訂單摘要</h2>
+    <div style="display: flex; flex-direction: column; gap: 20px; border-bottom: 1px solid #e8e8ed; padding-bottom: 30px; margin-bottom: 30px;">
+        @foreach(var i in Model.Items) {
+            <div style="display:flex; align-items: center; justify-content:space-between;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <img src="@i.Product.ImageUrl" loading="lazy" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/60'"/>
+                    <div><div style="font-weight: 600; font-size: 16px;">@i.Product.Title</div><div style="color: var(--text-secondary); font-size: 14px;">數量: @i.Quantity</div></div>
+                </div>
+                <span style="font-weight: 500;">NT$ @i.Product.Price.ToString("N0")</span>
+            </div>
+        }
+    </div>
+    <div style="background: var(--bg-primary); padding: 24px; border-radius: var(--radius-md); margin-bottom: 30px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px;color:var(--text-secondary);"><span>小計</span><span>NT$ @Model.Subtotal.ToString("N0")</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:20px;color:var(--text-secondary);"><span>運費</span><span style="color: #34c759;">免運費 (數位商品)</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:24px;font-weight:700;border-top: 1px solid #d2d2d7; padding-top: 20px;"><span>總金額</span><span>NT$ @Model.Total.ToString("N0")</span></div>
+    </div>
+    <form id="checkoutForm" asp-action="ProcessPayment" asp-controller="Checkout" method="post">
+        <label style="display:block;margin-bottom:12px;font-weight:600;font-size:16px;">選擇付款方式</label>
+        <select name="paymentMethod" required style="width:100%;margin-bottom:30px;height:50px;font-size:16px;"><option value="ECPay">信用卡 (綠界安全結帳)</option><option value="LinePay">LINE Pay</option></select>
+        <button type="submit" class="btn-primary" style="width:100%;font-size:18px;padding:16px;">確認並付款</button>
+    </form>
+    <script>document.getElementById('checkoutForm').addEventListener('submit', function(e) { var btn = this.querySelector('button[type="submit"]'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 正在建立安全連線...'; });</script>
+</div>

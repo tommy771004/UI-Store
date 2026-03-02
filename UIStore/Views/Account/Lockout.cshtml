@@ -1,0 +1,13 @@
+@{ ViewData["Title"] = "帳號已停權"; }
+<div style="display: flex; justify-content: center; align-items: center; min-height: 60vh;">
+    <div style="text-align: center; background: var(--bg-secondary); padding: 60px 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-hover); max-width: 500px; width: 100%;">
+        <div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255, 59, 48, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px auto;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        </div>
+        <h1 style="font-size: 28px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">帳號已暫時停權</h1>
+        <p style="font-size: 16px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px;">我們的系統在您上傳的檔案中偵測到<strong>嚴重的安全威脅或惡意程式碼</strong>。為了保護平台與其他使用者的安全，您的帳號已被系統自動鎖定。</p>
+        <div style="background: var(--bg-primary); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 32px; font-size: 14px; font-weight: 500; color: #ff3b30;">封鎖解除時間：5 天後自動解除</div>
+        <a href="/" class="btn-primary" style="width: 100%; display: block; text-align: center;">返回首頁</a>
+        <p style="margin-top: 20px; font-size: 12px; color: var(--text-secondary);">如果您認為這是一個誤判，請聯繫 <a href="mailto:security@uistore.com" style="color: var(--accent-blue); text-decoration: underline;">安全中心</a> 提出申訴。</p>
+    </div>
+</div>

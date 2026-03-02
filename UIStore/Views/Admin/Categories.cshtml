@@ -1,0 +1,23 @@
+@model IEnumerable<UIStore.Models.Category>
+<div style="max-width:800px; margin:40px auto; padding:0 20px;">
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:30px;">
+        <a href="/Admin" class="btn-secondary" style="padding: 8px 16px;">&larr; 返回總覽</a>
+        <h2 style="margin:0; font-size:28px;">商城分類管理</h2>
+    </div>
+    <div style="background:#fff; padding:30px; border-radius:12px; margin-bottom:40px; box-shadow:var(--shadow-soft);">
+        <h4 style="margin-top:0; margin-bottom: 16px; font-size:18px;">新增分類</h4>
+        <form asp-action="CreateCategory" method="post" style="display:flex; gap:16px; margin:0;">
+            <input type="text" name="name" placeholder="輸入新分類名稱 (例如：AI 模板)..." required style="flex:1; margin:0;" />
+            <button type="submit" class="btn-primary">確定新增</button>
+        </form>
+    </div>
+    @if(!Model.Any()){ <div class="empty-state">尚無分類</div> }
+    else {
+        <table><thead><tr><th>ID</th><th>分類名稱</th><th>上架商品數</th></tr></thead>
+        <tbody>
+            @foreach(var c in Model) {
+                <tr><td>@c.Id</td><td style="font-weight:bold; color:var(--text-primary);">@c.Name</td><td><span class="badge badge-info">@c.Products?.Count 個</span></td></tr>
+            }
+        </tbody></table>
+    }
+</div>

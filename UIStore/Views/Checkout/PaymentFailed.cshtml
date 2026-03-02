@@ -1,0 +1,12 @@
+@{ ViewData["Title"] = "付款失敗"; }
+<div style="display: flex; justify-content: center; align-items: center; min-height: 60vh;">
+    <div style="text-align: center; background: var(--bg-secondary); padding: 60px 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); max-width: 500px; width: 100%;">
+        <div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255, 59, 48, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px auto;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        </div>
+        <h1 style="font-size: 28px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">授權失敗或已取消</h1>
+        <p style="font-size: 16px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 32px;">很抱歉，您的付款未能完成。這可能是因為您取消了交易，或是發卡銀行拒絕了授權。系統不會向您收取任何費用。</p>
+        <a href="/Cart" class="btn-primary" style="width: 100%; display: block; text-align: center; margin-bottom: 16px; padding:16px; font-size:16px;">返回購物袋重新結帳</a>
+        <a href="/Home/Support" style="color: var(--text-secondary); font-size: 14px; text-decoration: underline;">聯繫客服支援</a>
+    </div>
+</div>

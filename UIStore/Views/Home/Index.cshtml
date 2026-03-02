@@ -1,0 +1,37 @@
+@model IEnumerable<UIStore.Models.ProductViewModel>
+<section class="hero-section fade-in delay-1" style="text-align:center; padding: 60px 20px;">
+    <h1 class="hero-title" style="font-size:48px;font-weight:700;">全新 UI 模組，專為開發者設計</h1>
+    <h2 class="hero-subtitle" style="font-size:24px;color:var(--text-secondary);margin-bottom:30px;">優雅、高效、好上手</h2>
+</section>
+<section style="max-width: 1000px; margin: 0 auto 40px auto; padding: 24px; background: #fff; border-radius: 18px; box-shadow: var(--shadow-soft);">
+    <form method="get" asp-action="Index" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+        <select name="categoryId" style="padding: 12px; width: 150px; margin-bottom:0;">
+            <option value="">所有分類</option>
+            @foreach(var cat in ViewBag.Categories) { <option value="@cat.Id" selected="@(ViewBag.CategoryId == cat.Id)">@cat.Name</option> }
+        </select>
+        <input type="text" name="keyword" value="@ViewBag.Keyword" placeholder="搜尋標題..." style="flex:1; margin-bottom:0;" />
+        <button type="submit" class="btn-primary" style="margin-bottom:0;">搜尋</button>
+    </form>
+</section>
+<section class="bento-grid">
+    @if(!Model.Any()) { <div class="empty-state" style="grid-column:1/-1;">找不到符合條件的模組。</div> }
+    @foreach (var p in Model) {
+        <div class="bento-card fade-in">
+            @if(p.IsNew) { <span class="badge-new" style="position:absolute;top:20px;right:20px;background:var(--accent-orange);color:#fff;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:600;z-index:3;">新款</span> }
+            <div class="card-header" style="position:relative;z-index:2;margin-bottom:20px;">
+                <div style="color:var(--text-secondary);font-size:12px;margin-bottom:4px;">@p.Category?.Name</div>
+                <h3 class="card-subtitle" style="font-size:24px;font-weight:700;margin:0;color:var(--text-primary);">@p.Title</h3>
+                <h4 style="font-size:14px;color:var(--text-secondary);margin:4px 0 0 0;">@p.Subtitle</h4>
+                <div class="card-price" style="margin-top:10px;font-size:16px;color:var(--text-primary);">NT$ @p.Price.ToString("N0")</div>
+            </div>
+            <div style="position:absolute;bottom:30px;right:30px;z-index:10;display:flex;gap:10px;">
+                <a href="/Home/Details/@p.ID" class="btn-secondary" style="padding:10px 20px;font-size:12px;">詳情</a>
+                <form asp-action="AddToCart" asp-controller="Cart" method="post" style="margin:0;">
+                    <input type="hidden" name="productId" value="@p.ID" />
+                    <button type="submit" class="btn-primary" style="padding:10px 20px;font-size:12px;box-shadow:var(--shadow-soft);">加入購物袋</button>
+                </form>
+            </div>
+            <div class="card-image-container"><img src="@p.ImageUrl" loading="lazy" class="card-image" onerror="this.src='https://via.placeholder.com/600x400'" /></div>
+        </div>
+    }
+</section>

@@ -1,0 +1,22 @@
+@model IEnumerable<UIStore.Models.Order>
+<div style="max-width:900px; margin:40px auto; padding:0 20px;">
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 30px;">
+        <a href="/Downloads/MyPurchases" class="btn-secondary" style="padding: 8px 16px;">&larr; 返回模板庫</a>
+        <h2 style="margin:0; font-size:28px;">歷史訂單紀錄</h2>
+    </div>
+    @if(!Model.Any()){ <div class="empty-state">查無歷史訂單。</div> }
+    else {
+        <table><thead><tr><th>訂單編號</th><th>購買項目</th><th>日期</th><th>金額</th><th>狀態</th></tr></thead>
+        <tbody>
+            @foreach(var o in Model) {
+                <tr>
+                    <td style="font-family: monospace; font-size:13px;">@o.MerchantTradeNo</td>
+                    <td>@foreach(var i in o.OrderItems) { <div style="font-size:13px;color:#555;">- @i.Product?.Title (x@i.Quantity)</div> }</td>
+                    <td style="color: var(--text-secondary); font-size:13px;">@o.OrderDate.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td style="font-weight: 600;">$@o.TotalAmount.ToString("N0")</td>
+                    <td><span class="badge @(o.PaymentStatus=="Paid"?"badge-success":o.PaymentStatus=="Failed"?"badge-danger":"badge-warning")">@o.PaymentStatus</span></td>
+                </tr>
+            }
+        </tbody></table>
+    }
+</div>

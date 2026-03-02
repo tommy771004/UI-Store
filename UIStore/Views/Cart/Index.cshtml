@@ -1,0 +1,39 @@
+@model IEnumerable<UIStore.Models.CartItem>
+@{ ViewData["Title"] = "購物袋"; decimal totalAmount = Model.Sum(item => item.Product.Price * item.Quantity); }
+<div style="max-width: 800px; margin: 0 auto; padding-top: 40px;">
+    <h1 style="font-size: 40px; font-weight: 700; text-align: center; margin-bottom: 40px;">您的購物袋</h1>
+    @if (!Model.Any()) {
+        <div class="empty-state">
+            <div style="font-size: 40px; margin-bottom: 16px;">🛍️</div>
+            <h3 style="color: var(--text-primary); font-size:24px;">您的購物袋是空的</h3>
+            <p style="margin-bottom:20px;">去探索看看有沒有適合您的 UI 模板吧！</p>
+            <a href="/" class="btn-primary">前往商城</a>
+        </div>
+    } else {
+        <div style="border-top: 1px solid #d2d2d7; border-bottom: 1px solid #d2d2d7; margin-bottom: 40px;">
+            @foreach (var item in Model) {
+                <div style="display: flex; padding: 30px 0; border-bottom: 1px solid #f5f5f7; align-items:center;">
+                    <img src="@item.Product.ImageUrl" style="width: 120px; height: 120px; object-fit: cover; border-radius: var(--radius-sm);" onerror="this.src='https://via.placeholder.com/120'" />
+                    <div style="flex-grow: 1; padding-left: 30px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <div><h3 style="font-size: 24px; font-weight: 600; margin: 0 0 8px 0;">@item.Product.Title</h3><p style="color: var(--text-secondary); font-size: 14px; margin: 0;">單次授權，包含原始碼與後續更新</p></div>
+                            <div style="font-size: 24px; font-weight: 600;">NT$ @item.Product.Price.ToString("N0")</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <form asp-action="Remove" asp-controller="Cart" method="post" style="margin:0;"><input type="hidden" name="cartItemId" value="@item.Id" /><button type="submit" style="background: none; border: none; color: var(--accent-red); font-size: 14px; cursor: pointer;">移除</button></form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div style="font-size: 14px; color: var(--text-secondary);">包含加值營業稅及其他法定稅費。</div>
+            <div style="text-align: right;">
+                <div style="display: flex; justify-content: space-between; gap: 40px; margin-bottom: 20px;">
+                    <span style="font-size: 24px; font-weight: 600;">總計</span><span style="font-size: 24px; font-weight: 600;">NT$ @totalAmount.ToString("N0")</span>
+                </div>
+                <a href="/Checkout/Review" class="btn-primary" style="font-size: 18px; padding: 16px 32px; width: 100%; max-width: 300px; display:block; text-align:center;">安全結帳</a>
+            </div>
+        </div>
+    }
+</div>

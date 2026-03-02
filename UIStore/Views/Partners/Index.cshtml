@@ -1,0 +1,44 @@
+@model IEnumerable<UIStore.Models.PartnerDashboardViewModel>
+@{ ViewData["Title"] = "夥伴中心 - 儀表板"; }
+<div style="max-width: 1000px; margin: 40px auto; padding:0 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 style="font-size: 32px; font-weight: 700;">UI 夥伴儀表板</h2>
+        <a href="/Partners/Upload" class="btn-primary" style="background-color: var(--text-primary);">+ 上傳新模板</a>
+    </div>
+    @if (!Model.Any()) {
+        <div class="empty-state">
+            <h3 style="margin-bottom: 12px; font-size: 20px; color:var(--text-primary);">您尚未上傳任何 UI 模板</h3>
+            <p style="margin-bottom: 24px;">成為我們的創作者，上傳您的設計並開始賺取收益吧！</p>
+            <a href="/Partners/Upload" class="btn-primary">立即上傳第一份作品</a>
+        </div>
+    } else {
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+            <div style="background: var(--bg-secondary); padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-soft);">
+                <div style="font-size: 14px; color: var(--text-secondary);">上傳總數</div><div style="font-size: 36px; font-weight: 700;">@Model.Count()</div>
+            </div>
+            <div style="background: var(--bg-secondary); padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-soft);">
+                <div style="font-size: 14px; color: var(--text-secondary);">累積售出 (份)</div><div style="font-size: 36px; font-weight: 700; color: var(--accent-blue);">@Model.Sum(m => m.SalesCount)</div>
+            </div>
+            <div style="background: var(--bg-secondary); padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-soft);">
+                <div style="font-size: 14px; color: var(--text-secondary);">累積收益 (NT$)</div><div style="font-size: 36px; font-weight: 700; color: #34c759;">@Model.Sum(m => m.TotalRevenue).ToString("N0")</div>
+            </div>
+        </div>
+        <h3 style="font-size: 24px; font-weight: 600; margin-bottom: 20px;">已上傳的模板</h3>
+        <div class="bento-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding:0;">
+            @foreach (var item in Model) {
+                <div class="bento-card" style="min-height: auto; padding: 20px; flex-direction: row; align-items: center; gap: 20px;">
+                    <img src="@item.Product.ImageUrl" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-sm);" onerror="this.src='https://via.placeholder.com/80'" />
+                    <div style="flex-grow: 1;">
+                        <div style="font-size: 18px; font-weight: 600;">@item.Product.Title</div>
+                        <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">NT$ @item.Product.Price.ToString("N0")</div>
+                        <div style="display: flex; gap: 12px; font-size: 12px; margin-bottom:10px;">
+                            <span style="background: #f0f0f5; padding: 4px 8px; border-radius: 6px;">售出: @item.SalesCount 份</span>
+                            <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 8px; border-radius: 6px;">收益: $@item.TotalRevenue.ToString("N0")</span>
+                        </div>
+                        <a href="/Partners/Edit/@item.Product.ID" class="btn-outline" style="padding:4px 12px; font-size:12px;">編輯資訊</a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

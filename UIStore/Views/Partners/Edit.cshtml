@@ -1,0 +1,20 @@
+@model UIStore.Models.EditUIViewModel
+<div style="max-width:700px;margin:40px auto;background:#fff;padding:40px;border-radius:18px;box-shadow:var(--shadow-soft);">
+    <h2 style="margin-bottom: 24px; font-size:28px;">編輯商品資訊</h2>
+    <form asp-action="Edit" enctype="multipart/form-data">
+        <input type="hidden" asp-for="ID" />
+        <label style="font-weight:600; display:block; margin-bottom:8px;">作品標題</label><input asp-for="Title" required/>
+        <label style="font-weight:600; display:block; margin-bottom:8px;">副標題</label><input asp-for="Subtitle" required/>
+        <label style="font-weight:600; display:block; margin-bottom:8px;">分類</label><select asp-for="CategoryId" required>@foreach(var c in ViewBag.Categories){<option value="@c.Id">@c.Name</option>}</select>
+        <label style="font-weight:600; display:block; margin-bottom:8px;">售價 (NT$)</label><input asp-for="Price" type="number" required/>
+        <label style="font-weight:600; display:block; margin-bottom:8px;">詳細介紹</label><textarea asp-for="Description" rows="8" required></textarea>
+        
+        <div style="margin-top: 20px; padding: 20px; background: #f5f5f7; border-radius: 8px; margin-bottom: 30px;">
+            <h4 style="margin-top:0; font-size:18px;">替換檔案 (選填)</h4>
+            <p style="font-size:12px;color:gray;margin-bottom:15px;">若不更新圖片或 ZIP 檔案，請保持空白。</p>
+            <label style="font-weight:600; display:block;">新封面圖 (.jpg, .png)</label><input asp-for="CoverImage" type="file" accept="image/*" style="margin-bottom:15px;"/>
+            <label style="font-weight:600; display:block;">新 ZIP 原始檔</label><input asp-for="TemplateFile" type="file" accept=".zip" />
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%;font-size:16px;padding:16px;">儲存變更</button>
+    </form>
+</div>

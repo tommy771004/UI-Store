@@ -1,0 +1,22 @@
+@model IEnumerable<UIStore.Models.Order>
+<div style="max-width:1000px; margin:40px auto; padding:0 20px;">
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:30px;">
+        <a href="/Admin" class="btn-secondary" style="padding: 8px 16px;">&larr; 返回總覽</a>
+        <h2 style="margin:0; font-size:28px;">全站訂單查詢 (客服專用)</h2>
+    </div>
+    @if(!Model.Any()){ <div class="empty-state">尚未產生任何訂單</div> }
+    else {
+        <table><thead><tr><th>訂單編號/金流序號</th><th>買家 Email</th><th>成立日期</th><th>總金額</th><th>付款狀態</th></tr></thead>
+        <tbody>
+            @foreach(var o in Model) {
+                <tr>
+                    <td style="font-family: monospace; font-size: 13px;"><strong>@o.MerchantTradeNo</strong><br/><span style="color:var(--text-secondary);">TxID: @(o.TransactionId??"N/A")</span></td>
+                    <td>@o.User?.Email</td>
+                    <td style="color:var(--text-secondary);">@o.OrderDate.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td style="font-weight:600; color:var(--text-primary);">NT$ @o.TotalAmount.ToString("N0")</td>
+                    <td><span class="badge @(o.PaymentStatus=="Paid"?"badge-success":o.PaymentStatus=="Failed"?"badge-danger":"badge-warning")">@o.PaymentStatus</span></td>
+                </tr>
+            }
+        </tbody></table>
+    }
+</div>

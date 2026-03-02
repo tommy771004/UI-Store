@@ -1,0 +1,14 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.db
+*.db-shm
+*.db-wal
+appsettings.json
+appsettings.*.json
+ADMIN_CREDENTIALS.txt
+SecureTemplates/*.zip
+wwwroot/uploads/*
+!wwwroot/uploads/.gitkeep
