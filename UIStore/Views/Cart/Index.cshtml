@@ -19,7 +19,12 @@
                             <div><h3 style="font-size: 24px; font-weight: 600; margin: 0 0 8px 0;">@item.Product.Title</h3><p style="color: var(--text-secondary); font-size: 14px; margin: 0;">單次授權，包含原始碼與後續更新</p></div>
                             <div style="font-size: 24px; font-weight: 600;">NT$ @item.Product.Price.ToString("N0")</div>
                         </div>
-                        <div style="text-align: right;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <form asp-action="UpdateQuantity" asp-controller="Cart" method="post" style="display:flex; align-items:center; gap:4px;" class="qty-form">
+                                <input type="hidden" name="cartItemId" value="@item.Id" />
+                                <input type="number" name="quantity" value="@item.Quantity" min="1" max="99" style="width:60px;" />
+                                <button type="submit" style="background:none;border:none;color:var(--text-primary);font-size:14px;cursor:pointer;">更新</button>
+                            </form>
                             <form asp-action="Remove" asp-controller="Cart" method="post" style="margin:0;"><input type="hidden" name="cartItemId" value="@item.Id" /><button type="submit" style="background: none; border: none; color: var(--accent-red); font-size: 14px; cursor: pointer;">移除</button></form>
                         </div>
                     </div>
@@ -37,3 +42,14 @@
         </div>
     }
 </div>
+<script>
+document.querySelectorAll('.qty-form').forEach(f => {
+    f.addEventListener('submit', function(e){
+        e.preventDefault();
+        var form = this; var fd = new FormData(form); var id = fd.get('cartItemId'); var qty = fd.get('quantity');
+        fetch('/Cart/UpdateQuantityAjax', { method:'POST', headers:{'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }, body: new URLSearchParams({ cartItemId: id, quantity: qty }) })
+        .then(r=>r.json()).then(j=>{ if(j.success){ if(j.removed){ location.reload(); } else { document.querySelector('a[href="/Checkout/Review"]').closest('div').querySelector('span')?.innerText = 'NT$ ' + (j.subtotal||0).toString(); location.reload(); } } else alert('更新失敗'); })
+        .catch(()=>alert('更新失敗'));
+    });
+});
+</script>
