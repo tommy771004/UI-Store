@@ -29,4 +29,29 @@ namespace UIStore.Models {
     public class UploadUIViewModel { [Required][StringLength(100)] public string Title { get; set; } [Required][StringLength(200)] public string Subtitle { get; set; } [Required] public string Description { get; set; } [Required][Range(0, 100000)] public decimal Price { get; set; } [Required] public int CategoryId { get; set; } [Required] public IFormFile CoverImage { get; set; } [Required] public IFormFile TemplateFile { get; set; } }
     public class EditUIViewModel { public int ID { get; set; } [Required][StringLength(100)] public string Title { get; set; } [Required][StringLength(200)] public string Subtitle { get; set; } [Required] public string Description { get; set; } [Required][Range(0, 100000)] public decimal Price { get; set; } [Required] public int CategoryId { get; set; } public IFormFile CoverImage { get; set; } public IFormFile TemplateFile { get; set; } }
     public class OrderReviewViewModel { public IEnumerable<CartItem> Items { get; set; } public decimal Subtotal { get; set; } public decimal ShippingFee { get; set; } public decimal Tax { get; set; } public decimal Total { get; set; } }
+
+    // view model used for user registration
+    public class RegisterViewModel {
+        [Required][EmailAddress] public string Email { get; set; }
+        [Required][StringLength(100, MinimumLength = 6)] [DataType(DataType.Password)] public string Password { get; set; }
+        [Required][Compare("Password", ErrorMessage = "密碼與確認密碼不一致")] [DataType(DataType.Password)] public string ConfirmPassword { get; set; }
+        [StringLength(50)] public string FullName { get; set; }
+    }
+
+    public class ForgotPasswordViewModel {
+        [Required][EmailAddress] public string Email { get; set; }
+    }
+
+    public class ResetPasswordViewModel {
+        [Required][EmailAddress] public string Email { get; set; }
+        [Required] public string Token { get; set; }
+        [Required][StringLength(100, MinimumLength = 6)] [DataType(DataType.Password)] public string Password { get; set; }
+        [Required][Compare("Password", ErrorMessage = "密碼與確認密碼不一致")] [DataType(DataType.Password)] public string ConfirmPassword { get; set; }
+    }
+
+    public class LoginViewModel {
+        [Required][EmailAddress] public string Email { get; set; }
+        [Required][DataType(DataType.Password)] public string Password { get; set; }
+        public bool RememberMe { get; set; }
+    }
 }
