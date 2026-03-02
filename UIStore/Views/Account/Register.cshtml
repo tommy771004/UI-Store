@@ -1,0 +1,39 @@
+@model UIStore.Models.RegisterViewModel
+@{ ViewData["Title"] = "註冊新帳號"; }
+<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div style="text-align: center; max-width: 400px; width: 100%; padding: 40px; background:var(--bg-secondary); border-radius:var(--radius-md); box-shadow:var(--shadow-soft);">
+        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 16px;">建立新帳號</h1>
+        <form asp-action="Register" asp-controller="Account" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger" />
+            <div style="margin-bottom:12px; text-align:left;">
+                <label>Email</label><br />
+                <input asp-for="Email" style="width:100%; padding:8px;" data-email-check="true" />
+                <span asp-validation-for="Email" class="field-validation-error"></span>
+            </div>
+            <div style="margin-bottom:12px; text-align:left;">
+                <label>密碼</label><br />
+                <input asp-for="Password" type="password" style="width:100%; padding:8px;" data-password-strength="true" />
+                <span asp-validation-for="Password" class="field-validation-error"></span>
+            </div>
+            <div style="margin-bottom:12px; text-align:left;">
+                <label>確認密碼</label><br />
+                <input asp-for="ConfirmPassword" type="password" style="width:100%; padding:8px;" />
+                <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
+            </div>
+            <div style="margin-bottom:20px; text-align:left;">
+                <label>顯示名稱 (選填)</label><br />
+                <input asp-for="FullName" style="width:100%; padding:8px;" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn-primary" style="width:100%; padding:12px; font-size:16px;">註冊</button>
+        </form>
+        <div style="margin-top:20px; font-size:14px;">
+            <a href="/Account/Login" style="color:var(--text-primary); text-decoration:underline;">已有帳號？前往登入</a>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationExtras.cshtml" />
+}
