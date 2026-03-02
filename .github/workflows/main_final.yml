@@ -1,0 +1,32 @@
+name: Run PowerShell Script
+
+# 設定觸發條件：當有人 push 代碼到 main 分支時執行
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # 這可以讓你手動點擊按鈕執行
+
+jobs:
+  build:
+    # 指定執行的環境，windows-latest 自帶完整 PowerShell 環境
+    runs-on: windows-latest
+
+    steps:
+      # 1. 將你的代碼從 GitHub 檢出（Checkout）到這台雲端電腦上
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 執行你的 PowerShell 腳本
+      - name: Run my script
+        shell: pwsh
+        run: |
+          ./UIStore_Installer.ps1
+		  
+      # 新增：自動將產生的檔案 Commit 並 Push 回去
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Automated .NET project generation" || echo "No changes to commit"
+          git push
