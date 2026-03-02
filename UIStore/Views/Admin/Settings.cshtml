@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "平台設定";
+}
+<div style="max-width:800px;margin:40px auto;padding:20px;background:var(--bg-secondary);border-radius:var(--radius-md);box-shadow:var(--shadow-soft);">
+    <h2 style="margin-top:0;">平台設定</h2>
+    <form asp-action="Settings" method="post">
+        @Html.AntiForgeryToken()
+        <div style="margin-bottom:12px;">
+            <label style="font-weight:600;">稅率（%）</label>
+            <input name="taxRate" value="@ViewBag.Tax" />
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="font-weight:600;">運費（固定金額，NT$）</label>
+            <input name="shippingFee" value="@ViewBag.Shipping" />
+        </div>
+        <button class="btn-primary" type="submit">儲存設定</button>
+    </form>
+</div>
