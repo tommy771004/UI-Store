@@ -1306,28 +1306,7 @@ app.Run();
 '@ -Encoding UTF8
 
 
-# ==========================================
-# HTTPS 憑證 (修復：信任開發憑證)
-# ==========================================
-Write-Host "[*] 設定 HTTPS 憑證..." -ForegroundColor Yellow
-try {
-    dotnet dev-certs https --trust 2>&1 | Out-Null
-    Write-Host "[✓] HTTPS 憑證已信任" -ForegroundColor Green
-} catch {
-    Write-Host "[!] 請手動執行: dotnet dev-certs https --trust" -ForegroundColor Yellow
-}
 
-# ==========================================
-# 驗證建置 (修復：確保專案可正常編譯)
-# ==========================================
-Write-Host "[*] 驗證建置..." -ForegroundColor Yellow
-$buildResult = dotnet build --no-restore 2>&1
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "[✓] 建置成功" -ForegroundColor Green
-} else {
-    Write-Host "[X] 建置失敗" -ForegroundColor Red
-    Write-Host $buildResult -ForegroundColor Gray
-}
 
 Write-Host "[Success] 專案建置完成！(V14 完整修復版：所有 Bug 已修復)" -ForegroundColor Green
 Write-Host "" -ForegroundColor Cyan
