@@ -1,5 +1,5 @@
 @model UIStore.Models.ApplicationUser
-<div style="max-width:500px; margin:40px auto; background:#fff; padding:40px; border-radius:18px; box-shadow: var(--shadow-soft);">
+<div style="max-width:500px; margin:40px auto; background:var(--bg-secondary); padding:40px; border-radius:18px; box-shadow: var(--shadow-soft);">
     <h2 style="margin-bottom: 24px; font-size:28px;">個人資料維護</h2>
     <form asp-action="UpdateProfile" method="post">
         <label style="display:block; margin-bottom:8px; font-weight:600;">Email (登入帳號)</label>
@@ -17,4 +17,5 @@
             <button class="btn-outline" style="width:100%; padding:14px; font-size:16px;">申請成為 UI 夥伴</button>
         </form>
     }
+    <a href="/Account/ChangePassword" class="btn-secondary" style="display:block; width:100%; text-align:center; padding:14px; font-size:16px; margin-top:16px;">變更密碼</a>
 </div>

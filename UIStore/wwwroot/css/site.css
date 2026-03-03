@@ -75,6 +75,23 @@ input:focus, textarea:focus, select:focus { outline:none; border-color:var(--acc
 /* ===== Toast 通知顏色 ===== */
 .toast-success { background:#34c759; } .toast-warning { background:#f59e0b; } .toast-danger { background:#ff3b30; } .toast-info { background:var(--accent-blue); }
 
+/* ===== 漢堡選單按鈕 ===== */
+.hamburger { display:none; flex-direction:column; justify-content:space-around; width:32px; height:32px; background:none; border:none; cursor:pointer; padding:4px; gap:4px; }
+.hamburger span { display:block; height:2px; background:var(--text-primary); border-radius:2px; transition:all 0.25s ease; transform-origin:center; }
+.hamburger.is-active span:nth-child(1) { transform:translateY(6px) rotate(45deg); }
+.hamburger.is-active span:nth-child(2) { opacity:0; transform:scaleX(0); }
+.hamburger.is-active span:nth-child(3) { transform:translateY(-6px) rotate(-45deg); }
+
+@media (max-width: 768px) {
+    .hamburger { display:flex; }
+    .nav-links { display:none; flex-direction:column; position:absolute; top:56px; left:0; right:0; background:var(--nav-bg); border-bottom:1px solid var(--border-color); padding:12px 20px 20px; gap:12px; box-shadow:var(--shadow-hover); z-index:999; }
+    .nav-links.nav-open { display:flex; }
+    .nav-links a { font-size:15px; padding:8px 0; border-bottom:1px solid var(--border-color); }
+    .nav-links a:last-of-type { border-bottom:none; }
+    .nav-links form { margin:0; }
+    .nav-links .theme-toggle { align-self:flex-start; }
+}
+
 @media (max-width: 600px) {
     :root { --radius-md:10px; }
     .nav-content { padding: 0 12px; }

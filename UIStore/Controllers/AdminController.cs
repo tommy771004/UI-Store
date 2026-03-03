@@ -1,8 +1,10 @@
-using System; using System.Linq; using System.Threading.Tasks; using Microsoft.AspNetCore.Authorization; using Microsoft.AspNetCore.Mvc; using Microsoft.EntityFrameworkCore; using UIStore.Data; using UIStore.Models;
+using System; using System.Linq; using System.Threading.Tasks; using Microsoft.AspNetCore.Authorization; using Microsoft.AspNetCore.Identity; using Microsoft.AspNetCore.Mvc; using Microsoft.EntityFrameworkCore; using UIStore.Data; using UIStore.Models;
 namespace UIStore.Controllers {
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller {
-        private readonly ApplicationDbContext _ctx; public AdminController(ApplicationDbContext ctx) { _ctx = ctx; }
+        private readonly ApplicationDbContext _ctx;
+        private readonly UserManager<ApplicationUser> _um;
+        public AdminController(ApplicationDbContext ctx, UserManager<ApplicationUser> um) { _ctx = ctx; _um = um; }
 
         public async Task<IActionResult> Index() {
             ViewBag.TotalUsers = await _ctx.Users.CountAsync();
@@ -90,6 +92,39 @@ namespace UIStore.Controllers {
             var c = await _ctx.Coupons.FindAsync(id);
             if (c != null) { _ctx.Coupons.Remove(c); await _ctx.SaveChangesAsync(); TempData["MessageType"]="success"; TempData["Message"]="優惠券已刪除"; }
             return RedirectToAction("Coupons");
+        }
+
+        // ===== 使用者管理 =====
+        public async Task<IActionResult> Users(string keyword, int page = 1) {
+            var query = _ctx.Users.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(keyword)) query = query.Where(u => u.Email.Contains(keyword) || u.FullName.Contains(keyword));
+            int ps = 20;
+            ViewBag.TotalPages = (int)Math.Ceiling(await query.CountAsync() / (double)ps);
+            ViewBag.CurrentPage = page; ViewBag.Keyword = keyword;
+            var users = await query.OrderBy(u => u.Email).Skip((page - 1) * ps).Take(ps).ToListAsync();
+            // 取得每位用戶的角色
+            var userRoles = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<string>>();
+            foreach (var u in users) { userRoles[u.Id] = await _um.GetRolesAsync(u); }
+            ViewBag.UserRoles = userRoles;
+            return View(users);
+        }
+
+        [HttpPost] public async Task<IActionResult> SetUserRole(string userId, string role) {
+            var u = await _um.FindByIdAsync(userId);
+            if (u == null) return NotFound();
+            var current = await _um.GetRolesAsync(u);
+            await _um.RemoveFromRolesAsync(u, current);
+            if (!string.IsNullOrWhiteSpace(role)) await _um.AddToRoleAsync(u, role);
+            TempData["MessageType"]="success"; TempData["Message"]=$"已更新 {u.Email} 的角色";
+            return RedirectToAction("Users");
+        }
+
+        [HttpPost] public async Task<IActionResult> LockUser(string userId, bool locked) {
+            var u = await _um.FindByIdAsync(userId);
+            if (u == null) return NotFound();
+            await _um.SetLockoutEndDateAsync(u, locked ? DateTimeOffset.UtcNow.AddYears(99) : (DateTimeOffset?)null);
+            TempData["MessageType"]="success"; TempData["Message"]= locked ? $"帳號 {u.Email} 已停權" : $"帳號 {u.Email} 已解鎖";
+            return RedirectToAction("Users");
         }
     }
 }
