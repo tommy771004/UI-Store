@@ -4,18 +4,23 @@
         <a href="/Admin" class="btn-secondary" style="padding: 8px 16px;">&larr; 返回總覽</a>
         <h2 style="margin:0; font-size:28px;">商品與違規下架管理</h2>
     </div>
-    <p style="color:var(--text-secondary); margin-bottom: 30px;">使用「軟刪除」機制下架商品，這將使商品從前台隱藏，但保障已購買者的歷史訂單與下載權益不受影響。</p>
-    @if(!Model.Any()){ <div class="empty-state">商城內尚無商品</div> }
+    <form method="get" style="display:flex; gap:10px; margin-bottom:20px;">
+        <input type="text" name="keyword" value="@ViewBag.Keyword" placeholder="搜尋標題或上傳者..." style="flex:1; margin:0;" />
+        <button type="submit" class="btn-primary" style="margin:0;">搜尋</button>
+        @if(!string.IsNullOrEmpty(ViewBag.Keyword?.ToString())) { <a href="/Admin/Products" class="btn-secondary">清除</a> }
+    </form>
+    <p style="color:var(--text-secondary); margin-bottom: 20px;">使用「軟刪除」機制下架商品，這將使商品從前台隱藏，但保障已購買者的歷史訂單與下載權益不受影響。</p>
+    @if(!Model.Any()){ <div class="empty-state">查無商品</div> }
     else {
         <table><thead><tr><th>狀態</th><th>圖片</th><th>標題/分類</th><th>上傳者</th><th>售價</th><th>操作</th></tr></thead>
         <tbody>
             @foreach(var p in Model) {
-                <tr style="@(p.IsDeleted ? "opacity: 0.6; background-color: #fafafa;" : "")">
+                <tr style="@(p.IsDeleted ? "opacity: 0.6;" : "")">
                     <td>@if(p.IsDeleted) { <span class="badge badge-danger">強制下架</span> } else { <span class="badge badge-success">正常販售</span> }</td>
-                    <td><img src="@p.ImageUrl" style="width:60px;height:60px;object-fit:cover;border-radius:6px;" onerror="this.src='https://via.placeholder.com/60'"/></td>
-                    <td><a href="/Home/Details/@p.ID" target="_blank" style="color:var(--accent-blue);font-weight:600;">@p.Title</a><br/><span style="font-size:12px;color:gray;">@p.Category?.Name</span></td>
+                    <td><img src="@p.ImageUrl" style="width:60px;height:60px;object-fit:cover;border-radius:6px;" onerror="this.src='https://placehold.co/60'"/></td>
+                    <td><a href="/Home/Details/@p.ID" target="_blank" style="color:var(--accent-blue);font-weight:600;">@p.Title</a><br/><span style="font-size:12px;color:var(--text-secondary);">@p.Category?.Name</span></td>
                     <td style="font-size:12px; color:var(--text-secondary);">@p.Uploader?.Email</td>
-                    <td style="font-weight: 600;">$@p.Price.ToString("N0")</td>
+                    <td style="font-weight: 600;">NT$@p.Price.ToString("N0")</td>
                     <td>
                         @if(!p.IsDeleted) {
                             <form asp-action="ToggleProductStatus" method="post" onsubmit="return confirm('確定要下架此商品嗎？');" style="margin:0;"><input type="hidden" name="id" value="@p.ID" /><button type="submit" class="btn-danger" style="padding:6px 12px; font-size:12px;">封鎖下架</button></form>
@@ -26,5 +31,14 @@
                 </tr>
             }
         </tbody></table>
+    }
+    @if(ViewBag.TotalPages > 1) {
+        <div class="pagination">
+            @if(ViewBag.CurrentPage > 1) { <a href="?keyword=@ViewBag.Keyword&page=@(ViewBag.CurrentPage - 1)">&laquo;</a> }
+            @for(int i = 1; i <= ViewBag.TotalPages; i++) {
+                if(i == ViewBag.CurrentPage) { <span class="active">@i</span> } else { <a href="?keyword=@ViewBag.Keyword&page=@i">@i</a> }
+            }
+            @if(ViewBag.CurrentPage < ViewBag.TotalPages) { <a href="?keyword=@ViewBag.Keyword&page=@(ViewBag.CurrentPage + 1)">&raquo;</a> }
+        </div>
     }
 </div>

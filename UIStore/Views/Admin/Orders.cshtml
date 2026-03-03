@@ -4,19 +4,40 @@
         <a href="/Admin" class="btn-secondary" style="padding: 8px 16px;">&larr; 返回總覽</a>
         <h2 style="margin:0; font-size:28px;">全站訂單查詢 (客服專用)</h2>
     </div>
-    @if(!Model.Any()){ <div class="empty-state">尚未產生任何訂單</div> }
+    <form method="get" style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+        <input type="text" name="keyword" value="@ViewBag.Keyword" placeholder="搜尋 Email 或訂單編號..." style="flex:2; min-width:200px; margin:0;" />
+        <select name="status" style="flex:1; min-width:120px; margin:0;">
+            <option value="">所有狀態</option>
+            <option value="Paid" selected="@(ViewBag.Status=="Paid")">已付款</option>
+            <option value="Pending" selected="@(ViewBag.Status=="Pending")">待付款</option>
+            <option value="Failed" selected="@(ViewBag.Status=="Failed")">付款失敗</option>
+        </select>
+        <button type="submit" class="btn-primary" style="margin:0;">搜尋</button>
+        @if(!string.IsNullOrEmpty(ViewBag.Keyword?.ToString()) || !string.IsNullOrEmpty(ViewBag.Status?.ToString())) { <a href="/Admin/Orders" class="btn-secondary">清除</a> }
+    </form>
+    @if(!Model.Any()){ <div class="empty-state">查無訂單</div> }
     else {
-        <table><thead><tr><th>訂單編號/金流序號</th><th>買家 Email</th><th>成立日期</th><th>總金額</th><th>付款狀態</th></tr></thead>
+        <table><thead><tr><th>訂單編號/金流序號</th><th>買家 Email</th><th>成立日期</th><th>金額</th><th>折扣</th><th>付款狀態</th></tr></thead>
         <tbody>
             @foreach(var o in Model) {
                 <tr>
                     <td style="font-family: monospace; font-size: 13px;"><strong>@o.MerchantTradeNo</strong><br/><span style="color:var(--text-secondary);">TxID: @(o.TransactionId??"N/A")</span></td>
                     <td>@o.User?.Email</td>
                     <td style="color:var(--text-secondary);">@o.OrderDate.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td style="font-weight:600; color:var(--text-primary);">NT$ @o.TotalAmount.ToString("N0")</td>
+                    <td style="font-weight:600;">NT$ @o.TotalAmount.ToString("N0")</td>
+                    <td style="color:var(--accent-red);">@(o.DiscountAmount > 0 ? $"-NT${o.DiscountAmount:N0}" : "-")</td>
                     <td><span class="badge @(o.PaymentStatus=="Paid"?"badge-success":o.PaymentStatus=="Failed"?"badge-danger":"badge-warning")">@o.PaymentStatus</span></td>
                 </tr>
             }
         </tbody></table>
+    }
+    @if(ViewBag.TotalPages > 1) {
+        <div class="pagination">
+            @if(ViewBag.CurrentPage > 1) { <a href="?keyword=@ViewBag.Keyword&status=@ViewBag.Status&page=@(ViewBag.CurrentPage - 1)">&laquo;</a> }
+            @for(int i = 1; i <= ViewBag.TotalPages; i++) {
+                if(i == ViewBag.CurrentPage) { <span class="active">@i</span> } else { <a href="?keyword=@ViewBag.Keyword&status=@ViewBag.Status&page=@i">@i</a> }
+            }
+            @if(ViewBag.CurrentPage < ViewBag.TotalPages) { <a href="?keyword=@ViewBag.Keyword&status=@ViewBag.Status&page=@(ViewBag.CurrentPage + 1)">&raquo;</a> }
+        </div>
     }
 </div>
