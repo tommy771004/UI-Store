@@ -6,12 +6,16 @@
     <title>@ViewData["Title"] - UI Store</title>
     @RenderSection("MetaTags", required: false)
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script>
+        // 立即套用儲存的主題，避免閃爍
+        (function() { var t = localStorage.getItem('theme'); if (t) document.documentElement.setAttribute('data-theme', t); })();
+    </script>
 </head>
 <body>
     @if (TempData["Message"] != null) {
         var type = TempData["MessageType"]?.ToString() ?? "info";
         <div class="toast-alert toast-@type" style="position:fixed; top:70px; right:20px; color:#fff; padding:12px 24px; border-radius:8px; z-index:9999; box-shadow:var(--shadow-hover);">@TempData["Message"]</div>
-        <script>setTimeout(() => document.querySelector('.toast-alert').style.display='none', 4000);</script>
+        <script>setTimeout(() => { var t = document.querySelector('.toast-alert'); if(t) t.style.display='none'; }, 4000);</script>
     }
     <header class="nav-container">
         <div class="nav-content">
@@ -30,17 +34,34 @@
                     <a href="/Cart" style="font-weight: 600;">@await Component.InvokeAsync("CartCount")</a>
                     <form method="post" asp-controller="Account" asp-action="Logout" style="display:inline;"><button type="submit" style="background:none;border:none;color:inherit;font-size:12px;cursor:pointer;font-weight:bold;">登出</button></form>
                 } else { <a href="/Account/Login" class="btn-primary" style="padding: 8px 16px; color:#fff;">登入 / 註冊</a> }
+                <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="切換深色/淺色模式">🌙</button>
             </nav>
         </div>
     </header>
     <main class="main-content">@RenderBody()</main>
     <footer class="site-footer">
         <div class="footer-content">
-            <p>Copyright © 2026 UI Store Inc. 保留一切權利。</p>
+            <p>Copyright &copy; 2026 UI Store Inc. 保留一切權利。</p>
             <div class="footer-links" style="margin-top: 10px;">
-                <a href="/Home/Privacy" style="color:var(--accent-blue); margin-right:10px;">隱私權政策</a> | 
+                <a href="/Home/Privacy" style="color:var(--accent-blue); margin-right:10px;">隱私權政策</a> |
                 <a href="/Home/Terms" style="color:var(--accent-blue); margin-left:10px;">使用條款</a>
             </div>
         </div>
     </footer>
+    <script>
+        function toggleTheme() {
+            var html = document.documentElement;
+            var current = html.getAttribute('data-theme');
+            var next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+        }
+        // 初始化按鈕圖示
+        (function() {
+            var t = document.documentElement.getAttribute('data-theme');
+            var btn = document.getElementById('themeBtn');
+            if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+        })();
+    </script>
 </body></html>

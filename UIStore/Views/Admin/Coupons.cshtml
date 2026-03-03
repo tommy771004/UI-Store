@@ -1,0 +1,77 @@
+@model IEnumerable<UIStore.Models.Coupon>
+@{ ViewData["Title"] = "優惠券管理"; }
+<div style="max-width:1000px; margin:40px auto; padding:0 20px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:30px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:16px;">
+            <a href="/Admin" class="btn-secondary" style="padding: 8px 16px;">&larr; 返回總覽</a>
+            <h2 style="margin:0; font-size:28px;">優惠券管理</h2>
+        </div>
+        <button onclick="document.getElementById('createForm').style.display='block'" class="btn-primary">+ 新增優惠券</button>
+    </div>
+
+    <!-- 新增優惠券表單 -->
+    <div id="createForm" style="display:none; background:var(--bg-secondary); padding:24px; border-radius:12px; box-shadow:var(--shadow-soft); margin-bottom:30px;">
+        <h3 style="margin-top:0;">新增優惠券</h3>
+        <form asp-action="CreateCoupon" method="post">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div>
+                    <label style="font-size:12px;color:var(--text-secondary);">優惠碼（自動轉大寫）</label>
+                    <input type="text" name="Code" required placeholder="例: SAVE100" style="margin-top:4px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px;color:var(--text-secondary);">描述</label>
+                    <input type="text" name="Description" placeholder="優惠說明（選填）" style="margin-top:4px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px;color:var(--text-secondary);">折扣類型</label>
+                    <select name="DiscountType" style="margin-top:4px;">
+                        <option value="Fixed">固定金額折扣 (NT$)</option>
+                        <option value="Percentage">百分比折扣 (%)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px;color:var(--text-secondary);">折扣值</label>
+                    <input type="number" name="DiscountValue" min="0.01" step="0.01" required placeholder="例: 100 或 10" style="margin-top:4px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px;color:var(--text-secondary);">到期日（選填）</label>
+                    <input type="date" name="ExpiryDate" style="margin-top:4px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px;color:var(--text-secondary);">最大使用次數（空白=不限）</label>
+                    <input type="number" name="MaxUses" min="1" placeholder="不限" style="margin-top:4px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px;color:var(--text-secondary);">最低訂單金額 (NT$)</label>
+                    <input type="number" name="MinOrderAmount" min="0" value="0" style="margin-top:4px;" />
+                </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" class="btn-primary">建立優惠券</button>
+                <button type="button" onclick="document.getElementById('createForm').style.display='none'" class="btn-secondary">取消</button>
+            </div>
+        </form>
+    </div>
+
+    @if(!Model.Any()) { <div class="empty-state">尚未建立任何優惠券</div> }
+    else {
+        <table><thead><tr><th>優惠碼</th><th>描述</th><th>折扣</th><th>到期日</th><th>使用</th><th>最低消費</th><th>狀態</th><th>操作</th></tr></thead>
+        <tbody>
+            @foreach(var c in Model) {
+                <tr style="@(c.IsActive ? "" : "opacity:0.6;")">
+                    <td><strong style="font-family:monospace;font-size:14px;">@c.Code</strong></td>
+                    <td style="font-size:13px;color:var(--text-secondary);">@c.Description</td>
+                    <td>@(c.DiscountType == "Percentage" ? $"{c.DiscountValue}%" : $"NT${c.DiscountValue:N0}")</td>
+                    <td style="font-size:13px;">@(c.ExpiryDate.HasValue ? c.ExpiryDate.Value.ToString("yyyy-MM-dd") : "無期限")</td>
+                    <td>@c.UsedCount / @(c.MaxUses.HasValue ? c.MaxUses.Value.ToString() : "∞")</td>
+                    <td>@(c.MinOrderAmount > 0 ? $"NT${c.MinOrderAmount:N0}" : "-")</td>
+                    <td><span class="badge @(c.IsActive ? "badge-success" : "badge-warning")">@(c.IsActive ? "啟用中" : "已停用")</span></td>
+                    <td style="display:flex; gap:6px;">
+                        <form asp-action="ToggleCoupon" method="post" style="margin:0;"><input type="hidden" name="id" value="@c.Id" /><button class="btn-secondary" style="padding:4px 10px;font-size:12px;">@(c.IsActive?"停用":"啟用")</button></form>
+                        <form asp-action="DeleteCoupon" method="post" style="margin:0;" onsubmit="return confirm('確定刪除？');"><input type="hidden" name="id" value="@c.Id" /><button class="btn-danger" style="padding:4px 10px;font-size:12px;">刪除</button></form>
+                    </td>
+                </tr>
+            }
+        </tbody></table>
+    }
+</div>

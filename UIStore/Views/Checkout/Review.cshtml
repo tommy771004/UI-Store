@@ -1,26 +1,75 @@
 @model UIStore.Models.OrderReviewViewModel
 <div style="max-width:800px;margin:40px auto;background:var(--bg-secondary);padding:40px;border-radius:var(--radius-lg);box-shadow:var(--shadow-hover);">
     <h2 style="font-size: 28px; margin-bottom:30px;">結帳與訂單摘要</h2>
-    <div style="display: flex; flex-direction: column; gap: 20px; border-bottom: 1px solid #e8e8ed; padding-bottom: 30px; margin-bottom: 30px;">
+    <div style="display: flex; flex-direction: column; gap: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 30px; margin-bottom: 30px;">
         @foreach(var i in Model.Items) {
             <div style="display:flex; align-items: center; justify-content:space-between;">
                 <div style="display: flex; align-items: center; gap: 16px;">
-                    <img src="@i.Product.ImageUrl" loading="lazy" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/60'"/>
+                    <img src="@i.Product.ImageUrl" loading="lazy" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;" onerror="this.src='https://placehold.co/60'"/>
                     <div><div style="font-weight: 600; font-size: 16px;">@i.Product.Title</div><div style="color: var(--text-secondary); font-size: 14px;">數量: @i.Quantity</div></div>
                 </div>
                 <span style="font-weight: 500;">NT$ @i.Product.Price.ToString("N0")</span>
             </div>
         }
     </div>
+
+    <!-- 優惠碼欄位 -->
+    <div style="margin-bottom:24px;">
+        <label style="display:block;font-weight:600;margin-bottom:8px;">優惠碼（選填）</label>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="couponInput" placeholder="輸入優惠碼" value="@Model.CouponCode" style="flex:1; margin:0; text-transform:uppercase;" />
+            <button type="button" onclick="applyCoupon()" class="btn-secondary" style="margin:0;">套用</button>
+        </div>
+        <div id="couponMsg" style="margin-top:8px; font-size:13px; @(string.IsNullOrEmpty(Model.CouponMessage) ? "display:none;" : "")">@Model.CouponMessage</div>
+    </div>
+
     <div style="background: var(--bg-primary); padding: 24px; border-radius: var(--radius-md); margin-bottom: 30px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:12px;color:var(--text-secondary);"><span>小計</span><span>NT$ @Model.Subtotal.ToString("N0")</span></div>
+        <div id="discountRow" style="display:flex;justify-content:space-between;margin-bottom:12px;color:var(--accent-red);@(Model.DiscountAmount > 0 ? "" : "display:none!important;")">
+            <span>優惠折扣</span><span>-NT$ <span id="discountVal">@Model.DiscountAmount.ToString("N0")</span></span>
+        </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:20px;color:var(--text-secondary);"><span>運費</span><span style="color: #34c759;">免運費 (數位商品)</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:24px;font-weight:700;border-top: 1px solid #d2d2d7; padding-top: 20px;"><span>總金額</span><span>NT$ @Model.Total.ToString("N0")</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:24px;font-weight:700;border-top: 1px solid var(--border-color); padding-top: 20px;"><span>總金額</span><span>NT$ <span id="totalVal">@Model.Total.ToString("N0")</span></span></div>
     </div>
+
     <form id="checkoutForm" asp-action="ProcessPayment" asp-controller="Checkout" method="post">
+        <input type="hidden" name="couponCode" id="finalCouponCode" value="@Model.CouponCode" />
         <label style="display:block;margin-bottom:12px;font-weight:600;font-size:16px;">選擇付款方式</label>
         <select name="paymentMethod" required style="width:100%;margin-bottom:30px;height:50px;font-size:16px;"><option value="ECPay">信用卡 (綠界安全結帳)</option><option value="LinePay">LINE Pay</option></select>
         <button type="submit" class="btn-primary" style="width:100%;font-size:18px;padding:16px;">確認並付款</button>
     </form>
-    <script>document.getElementById('checkoutForm').addEventListener('submit', function(e) { var btn = this.querySelector('button[type="submit"]'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 正在建立安全連線...'; });</script>
+    <script>
+    var appliedDiscount = @Model.DiscountAmount;
+    var subtotal = @Model.Subtotal;
+
+    async function applyCoupon() {
+        var code = document.getElementById('couponInput').value.trim().toUpperCase();
+        if (!code) return;
+        var msg = document.getElementById('couponMsg');
+        msg.style.display = 'block'; msg.textContent = '驗證中...'; msg.style.color = 'var(--text-secondary)';
+        try {
+            var resp = await fetch('/Checkout/ValidateCoupon', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({code: code}) });
+            var data = await resp.json();
+            msg.textContent = data.message;
+            if (data.isValid) {
+                msg.style.color = '#34c759'; appliedDiscount = data.discountAmount;
+                document.getElementById('discountRow').style.display = 'flex';
+                document.getElementById('discountVal').textContent = data.discountAmount.toLocaleString();
+                document.getElementById('totalVal').textContent = (subtotal - data.discountAmount).toLocaleString();
+                document.getElementById('finalCouponCode').value = code;
+            } else {
+                msg.style.color = '#ff3b30'; appliedDiscount = 0;
+                document.getElementById('discountRow').style.display = 'none';
+                document.getElementById('totalVal').textContent = subtotal.toLocaleString();
+                document.getElementById('finalCouponCode').value = '';
+            }
+        } catch(e) { msg.textContent = '驗證失敗，請稍後再試'; msg.style.color = '#ff3b30'; }
+    }
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        var btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 正在建立安全連線...';
+    });
+    // 按 Enter 套用優惠碼
+    document.getElementById('couponInput').addEventListener('keydown', function(e) { if(e.key === 'Enter') { e.preventDefault(); applyCoupon(); } });
+    </script>
 </div>

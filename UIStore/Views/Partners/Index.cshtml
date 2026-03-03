@@ -1,8 +1,8 @@
 @model IEnumerable<UIStore.Models.PartnerDashboardViewModel>
 @{ ViewData["Title"] = "夥伴中心 - 儀表板"; }
 <div style="max-width: 1000px; margin: 40px auto; padding:0 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <h2 style="font-size: 32px; font-weight: 700;">UI 夥伴儀表板</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap:wrap; gap:12px;">
+        <h2 style="font-size: 32px; font-weight: 700; margin:0;">UI 夥伴儀表板</h2>
         <a href="/Partners/Upload" class="btn-primary" style="background-color: var(--text-primary);">+ 上傳新模板</a>
     </div>
     @if (!Model.Any()) {
@@ -23,17 +23,24 @@
                 <div style="font-size: 14px; color: var(--text-secondary);">累積收益 (NT$)</div><div style="font-size: 36px; font-weight: 700; color: #34c759;">@Model.Sum(m => m.TotalRevenue).ToString("N0")</div>
             </div>
         </div>
+
+        <!-- 銷售趨勢圖表 -->
+        <div style="background: var(--bg-secondary); padding: 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-soft); margin-bottom: 40px;">
+            <h3 style="margin:0 0 16px 0; font-size:20px;">近 6 個月銷售趨勢</h3>
+            <canvas id="salesChart" height="80"></canvas>
+        </div>
+
         <h3 style="font-size: 24px; font-weight: 600; margin-bottom: 20px;">已上傳的模板</h3>
         <div class="bento-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding:0;">
             @foreach (var item in Model) {
                 <div class="bento-card" style="min-height: auto; padding: 20px; flex-direction: row; align-items: center; gap: 20px;">
-                    <img src="@item.Product.ImageUrl" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-sm);" onerror="this.src='https://via.placeholder.com/80'" />
+                    <img src="@item.Product.ImageUrl" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-sm);" onerror="this.src='https://placehold.co/80'" />
                     <div style="flex-grow: 1;">
                         <div style="font-size: 18px; font-weight: 600;">@item.Product.Title</div>
                         <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">NT$ @item.Product.Price.ToString("N0")</div>
-                        <div style="display: flex; gap: 12px; font-size: 12px; margin-bottom:10px;">
-                            <span style="background: #f0f0f5; padding: 4px 8px; border-radius: 6px;">售出: @item.SalesCount 份</span>
-                            <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 8px; border-radius: 6px;">收益: $@item.TotalRevenue.ToString("N0")</span>
+                        <div style="display: flex; gap: 12px; font-size: 12px; margin-bottom:10px; flex-wrap:wrap;">
+                            <span style="background: #f0f0f5; padding: 4px 8px; border-radius: 6px; color:var(--text-primary);">售出: @item.SalesCount 份</span>
+                            <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 8px; border-radius: 6px;">收益: NT$@item.TotalRevenue.ToString("N0")</span>
                         </div>
                         <a href="/Partners/Edit/@item.Product.ID" class="btn-outline" style="padding:4px 12px; font-size:12px;">編輯資訊</a>
                     </div>
@@ -42,3 +49,38 @@
         </div>
     }
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(async function() {
+    var canvas = document.getElementById('salesChart');
+    if (!canvas) return;
+    try {
+        var resp = await fetch('/Partners/SalesChartData');
+        var data = await resp.json();
+        if (!data.length) { canvas.parentElement.innerHTML += '<p style="color:var(--text-secondary);text-align:center;">尚無銷售紀錄</p>'; canvas.remove(); return; }
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        var gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+        var textColor = isDark ? '#9ba3af' : '#6b7680';
+        new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.label),
+                datasets: [
+                    { label: '收益 (NT$)', data: data.map(d => d.revenue), backgroundColor: 'rgba(0,102,204,0.7)', borderRadius: 6, yAxisID: 'y' },
+                    { label: '銷售件數', data: data.map(d => d.sales), backgroundColor: 'rgba(52,199,89,0.7)', borderRadius: 6, yAxisID: 'y2' }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: textColor } } },
+                scales: {
+                    x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                    y: { ticks: { color: textColor, callback: v => 'NT$' + v.toLocaleString() }, grid: { color: gridColor }, position: 'left' },
+                    y2: { ticks: { color: textColor }, grid: { display: false }, position: 'right' }
+                }
+            }
+        });
+    } catch(e) { console.warn('圖表載入失敗', e); }
+})();
+</script>

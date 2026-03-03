@@ -14,14 +14,23 @@
         <input asp-for="Price" type="number" placeholder="990" required />
         <label style="display:block;font-weight:600;margin-bottom:8px;">詳細介紹</label>
         <textarea asp-for="Description" rows="6" placeholder="詳細說明您的作品包含哪些頁面..." required></textarea>
-        
-        <div style="margin-bottom: 20px; padding: 20px; border: 2px dashed #d2d2d7; border-radius: var(--radius-sm); text-align: center;">
+
+        <div style="margin-bottom: 20px; padding: 20px; border: 2px dashed var(--border-color); border-radius: var(--radius-sm); text-align: center;">
             <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; cursor: pointer;">
-                上傳封面圖片 (JPG/PNG)
+                上傳封面主圖 (JPG/PNG)
                 <input asp-for="CoverImage" type="file" accept=".jpg,.jpeg,.png,.webp" style="display: block; margin: 10px auto;" required />
             </label>
         </div>
-        <div style="margin-bottom: 30px; padding: 20px; border: 2px dashed #0071e3; border-radius: var(--radius-sm); text-align: center; background-color: rgba(0, 113, 227, 0.05);">
+
+        <div style="margin-bottom: 20px; padding: 20px; border: 2px dashed var(--border-color); border-radius: var(--radius-sm); text-align: center;">
+            <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; cursor: pointer;">
+                上傳額外截圖 Gallery（最多 5 張，選填）
+                <input name="GalleryImages" type="file" accept=".jpg,.jpeg,.png,.webp" multiple style="display: block; margin: 10px auto;" />
+            </label>
+            <div style="font-size: 12px; color: var(--text-secondary);">可上傳多張展示截圖，讓買家更了解您的作品。</div>
+        </div>
+
+        <div style="margin-bottom: 30px; padding: 20px; border: 2px dashed var(--accent-blue); border-radius: var(--radius-sm); text-align: center; background-color: rgba(0, 102, 204, 0.05);">
             <label style="display: block; font-size: 14px; font-weight: 600; color: var(--accent-blue); margin-bottom: 8px; cursor: pointer;">
                 上傳 UI 模板壓縮檔 (.zip)
                 <input asp-for="TemplateFile" type="file" accept=".zip" style="display: block; margin: 10px auto;" required />

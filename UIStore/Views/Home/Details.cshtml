@@ -1,14 +1,34 @@
 @model UIStore.Models.ProductViewModel
-@{ ViewData["Title"] = Model.Title; var avg = Model.AverageRating > 0 ? Model.AverageRating.ToString("0.0") : "尚無評價"; }
+@{ ViewData["Title"] = Model.Title; var avg = Model.AverageRating > 0 ? Model.AverageRating.ToString("0.0") : "尚無評價"; var galleryImages = Model.Images?.OrderBy(i => i.SortOrder).ToList(); }
 @section MetaTags { <meta property="og:title" content="@Model.Title" /><meta property="og:description" content="@Model.Subtitle" /><meta property="og:image" content="@Url.Content("~" + Model.ImageUrl)" /> }
+
 <div style="max-width: 1000px; margin: 0 auto; padding: 40px 20px;">
+    <!-- 麵包屑導航 -->
+    <div style="font-size:13px; color:var(--text-secondary); margin-bottom:20px;">
+        <a href="/" style="color:var(--accent-blue);">首頁</a> &rsaquo;
+        <a href="/?categoryId=@Model.CategoryId" style="color:var(--accent-blue);">@Model.Category?.Name</a> &rsaquo;
+        <span>@Model.Title</span>
+    </div>
+
     <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; margin-bottom: 40px;">
-        <img src="@Model.ImageUrl" style="width: 100%; border-radius: var(--radius-md);" loading="eager" onerror="this.src='https://via.placeholder.com/800x600'" />
         <div>
-            <h1 style="margin-bottom: 8px; font-size:32px;">@Model.Title</h1><p style="color: gray; font-size:18px;">@Model.Subtitle</p>
+            <!-- 主圖 -->
+            <img id="mainImg" src="@Model.ImageUrl" style="width: 100%; border-radius: var(--radius-md); max-height:400px; object-fit:cover;" loading="eager" onerror="this.src='https://placehold.co/800x600/e2e8f0/64748b?text=No+Image'" />
+            <!-- Gallery 縮圖 -->
+            @if(galleryImages?.Any() == true) {
+                <div class="product-gallery">
+                    <img src="@Model.ImageUrl" class="active" onclick="switchImg(this, '@Model.ImageUrl')" onerror="this.src='https://placehold.co/80x60'" />
+                    @foreach(var img in galleryImages) {
+                        <img src="@img.ImageUrl" onclick="switchImg(this, '@img.ImageUrl')" onerror="this.src='https://placehold.co/80x60'" />
+                    }
+                </div>
+            }
+        </div>
+        <div>
+            <h1 style="margin-bottom: 8px; font-size:32px;">@Model.Title</h1>
+            <p style="color: var(--text-secondary); font-size:18px;">@Model.Subtitle</p>
             <div style="margin-bottom:20px;color:#f59e0b;">★ @avg (@Model.ReviewCount 則評價) | 售出 @Model.SalesCount 份</div>
             <h2 style="margin-bottom: 30px; font-size:28px;">NT$ @Model.Price.ToString("N0")</h2>
-            
             <div style="display:flex; gap:10px; margin-bottom: 20px;">
                 <form asp-action="AddToCart" asp-controller="Cart" method="post" style="flex:1; margin:0;"><input type="hidden" name="productId" value="@Model.ID" /><button class="btn-primary" style="width:100%;padding:16px;font-size:16px;">加入購物袋</button></form>
                 <form asp-action="Toggle" asp-controller="Wishlist" method="post" style="flex:1; margin:0;">
@@ -18,24 +38,62 @@
                     </button>
                 </form>
             </div>
-            
-            <p style="margin-top:20px;font-size:14px;color:gray;">作者: @Model.Uploader?.FullName</p>
+            <p style="margin-top:20px;font-size:14px;color:var(--text-secondary);">作者: @Model.Uploader?.FullName</p>
+            <p style="font-size:13px;color:var(--text-secondary);">分類: @Model.Category?.Name</p>
         </div>
     </div>
-    <div style="border-top: 1px solid #eee; padding-top:40px; display:grid; grid-template-columns: 2fr 1fr; gap: 40px;">
-        <div><h3 style="font-size:24px;">詳細介紹</h3><div style="line-height:1.6;font-size:16px;color:#333;">@Html.Raw(Model.Description?.Replace("\n", "<br/>"))</div></div>
-        <div style="background:#fff; padding:24px; border-radius:12px; box-shadow:var(--shadow-soft);">
+
+    <div style="border-top: 1px solid var(--border-color); padding-top:40px; display:grid; grid-template-columns: 2fr 1fr; gap: 40px;">
+        <div>
+            <h3 style="font-size:24px;">詳細介紹</h3>
+            <div style="line-height:1.6;font-size:16px;color:var(--text-primary);">@Html.Raw(Model.Description?.Replace("\n", "<br/>"))</div>
+        </div>
+        <div style="background:var(--bg-secondary); padding:24px; border-radius:12px; box-shadow:var(--shadow-soft);">
             <h3 style="font-size:20px;">買家真實評價</h3>
             @if(ViewBag.HasPurchased) {
                 <form asp-action="SubmitReview" method="post" style="margin-bottom:20px;">
                     <input type="hidden" name="productId" value="@Model.ID" />
                     <select name="rating" style="width:100%;margin-bottom:10px;"><option value="5">★★★★★ 非常滿意</option><option value="4">★★★★☆ 滿意</option><option value="3">★★★☆☆ 普通</option><option value="2">★★☆☆☆ 待改進</option><option value="1">★☆☆☆☆ 不推薦</option></select>
-                    <textarea name="comment" required placeholder="寫下心得..." style="width:100%;margin-bottom:10px;"></textarea><button class="btn-primary" style="width:100%;">送出評價</button>
+                    <textarea name="comment" required placeholder="寫下心得..." style="width:100%;margin-bottom:10px;min-height:80px;"></textarea>
+                    <button class="btn-primary" style="width:100%;">送出評價</button>
                 </form>
             }
             @if(Model.Reviews?.Any()==true) {
-                foreach(var r in Model.Reviews.OrderByDescending(x=>x.CreatedAt)) { <div style="margin-bottom:16px; border-bottom:1px solid #eee; padding-bottom:8px;"><strong>@r.User?.FullName</strong> <span style="color:#f59e0b;">@(new string('★', r.Rating))</span><p style="margin:4px 0;font-size:14px;">@r.Comment</p><div style="font-size:12px;color:gray;">@r.CreatedAt.ToString("yyyy-MM-dd")</div></div> }
-            } else { <p style="font-size:14px;color:gray;">尚無評價</p> }
+                foreach(var r in Model.Reviews.OrderByDescending(x=>x.CreatedAt)) {
+                    <div style="margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+                        <strong>@r.User?.FullName</strong> <span style="color:#f59e0b;">@(new string('★', r.Rating))</span>
+                        <p style="margin:4px 0;font-size:14px;color:var(--text-primary);">@r.Comment</p>
+                        <div style="font-size:12px;color:var(--text-secondary);">@r.CreatedAt.ToString("yyyy-MM-dd")</div>
+                    </div>
+                }
+            } else { <p style="font-size:14px;color:var(--text-secondary);">尚無評價</p> }
         </div>
     </div>
+
+    <!-- 相關商品推薦 -->
+    @if(((IEnumerable<UIStore.Models.ProductViewModel>)ViewBag.RelatedProducts)?.Any() == true) {
+        <div style="margin-top:60px;">
+            <h3 style="font-size:24px;margin-bottom:20px;">同分類商品</h3>
+            <div class="bento-grid" style="padding:0; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
+                @foreach(var rp in (IEnumerable<UIStore.Models.ProductViewModel>)ViewBag.RelatedProducts) {
+                    <div class="bento-card" style="min-height:200px;">
+                        <a href="/Home/Details/@rp.ID" style="position:absolute;inset:0;z-index:5;"></a>
+                        <div style="font-size:15px;font-weight:700;margin-bottom:4px;">@rp.Title</div>
+                        <div style="font-size:13px;color:var(--text-secondary);">@rp.Subtitle</div>
+                        <div style="font-size:14px;margin-top:8px;font-weight:600;">NT$ @rp.Price.ToString("N0")</div>
+                        @if(rp.AverageRating > 0) { <div style="font-size:12px;color:#f59e0b;margin-top:4px;">★ @rp.AverageRating.ToString("0.0")</div> }
+                        <div class="card-image-container"><img src="@rp.ImageUrl" loading="lazy" class="card-image" onerror="this.src='https://placehold.co/300x200'" /></div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 </div>
+
+<script>
+function switchImg(el, src) {
+    document.getElementById('mainImg').src = src;
+    document.querySelectorAll('.product-gallery img').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+}
+</script>
