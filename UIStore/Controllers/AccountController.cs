@@ -40,6 +40,19 @@ namespace UIStore.Controllers {
         [HttpPost] public async Task<IActionResult> UpdateProfile(string fullName) { var u = await _um.FindByIdAsync(CurrentUserId); if(u!=null) { u.FullName = System.Net.WebUtility.HtmlEncode(fullName); await _um.UpdateAsync(u); TempData["MessageType"]="success"; TempData["Message"]="資料已更新"; } return RedirectToAction("Profile"); }
         [HttpPost] public async Task<IActionResult> Logout() { await _sm.SignOutAsync(); return RedirectToAction("Index", "Home"); }
 
+        [HttpGet] public IActionResult ChangePassword() => View();
+        [HttpPost] [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword) {
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword)) { ModelState.AddModelError("", "請填寫所有欄位"); return View(); }
+            if (newPassword != confirmPassword) { ModelState.AddModelError("", "新密碼與確認密碼不一致"); return View(); }
+            if (newPassword.Length < 8) { ModelState.AddModelError("", "新密碼長度至少需要 8 個字元"); return View(); }
+            var u = await _um.FindByIdAsync(CurrentUserId);
+            var result = await _um.ChangePasswordAsync(u, currentPassword, newPassword);
+            if (result.Succeeded) { await _sm.RefreshSignInAsync(u); TempData["MessageType"]="success"; TempData["Message"]="密碼已成功更新"; return RedirectToAction("Profile"); }
+            foreach (var e in result.Errors) ModelState.AddModelError("", e.Description);
+            return View();
+        }
+
         [AllowAnonymous] [HttpGet] public IActionResult Register() {
             return View();
         }

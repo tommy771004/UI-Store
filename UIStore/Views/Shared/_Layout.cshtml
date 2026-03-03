@@ -22,6 +22,9 @@
             <a href="/" class="nav-brand">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--text-primary)"><path d="M12 2L2 22h20L12 2z"/></svg>
             </a>
+            <button class="hamburger" id="hamburgerBtn" onclick="toggleNav()" aria-label="開啟選單" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
             <nav class="nav-links" id="mainNav">
                 <a href="/">探索模組</a>
                 <a href="/Home/Support">支援服務</a>
@@ -63,5 +66,22 @@
             var btn = document.getElementById('themeBtn');
             if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
         })();
+        function toggleNav() {
+            var nav = document.getElementById('mainNav');
+            var btn = document.getElementById('hamburgerBtn');
+            var open = nav.classList.toggle('nav-open');
+            btn.classList.toggle('is-active', open);
+            btn.setAttribute('aria-expanded', open);
+        }
+        // 點擊外部關閉選單
+        document.addEventListener('click', function(e) {
+            var nav = document.getElementById('mainNav');
+            var btn = document.getElementById('hamburgerBtn');
+            if (nav && nav.classList.contains('nav-open') && !nav.contains(e.target) && !btn.contains(e.target)) {
+                nav.classList.remove('nav-open');
+                btn.classList.remove('is-active');
+                btn.setAttribute('aria-expanded', 'false');
+            }
+        });
     </script>
 </body></html>

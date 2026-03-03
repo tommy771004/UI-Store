@@ -1,0 +1,102 @@
+@model IEnumerable<UIStore.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "使用者管理";
+    var userRoles = ViewBag.UserRoles as System.Collections.Generic.Dictionary<string, System.Collections.Generic.IList<string>>;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    string keyword = ViewBag.Keyword as string;
+}
+<div style="max-width:1100px; margin:40px auto; padding:0 20px;">
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:30px; flex-wrap:wrap;">
+        <a href="/Admin" class="btn-secondary" style="padding:8px 16px;">&larr; 返回總覽</a>
+        <h2 style="margin:0; font-size:28px;">使用者管理</h2>
+    </div>
+
+    <form method="get" style="display:flex; gap:12px; margin-bottom:24px;">
+        <input type="text" name="keyword" value="@keyword" placeholder="搜尋 Email 或姓名..." style="flex:1; max-width:400px;" />
+        <button type="submit" class="btn-primary">搜尋</button>
+        @if (!string.IsNullOrWhiteSpace(keyword)) {
+            <a href="/Admin/Users" class="btn-secondary">清除</a>
+        }
+    </form>
+
+    @if (!Model.Any()) {
+        <div class="empty-state">查無使用者。</div>
+    } else {
+        <table>
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>顯示名稱</th>
+                    <th>目前角色</th>
+                    <th>Email 已驗證</th>
+                    <th>帳號狀態</th>
+                    <th>加入日期</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in Model) {
+                    var roles = userRoles != null && userRoles.ContainsKey(u.Id) ? userRoles[u.Id] : new List<string>();
+                    var isLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTimeOffset.UtcNow;
+                    <tr>
+                        <td style="font-size:13px;">@u.Email</td>
+                        <td>@u.FullName</td>
+                        <td>
+                            @foreach (var r in roles) {
+                                <span class="badge @(r=="Admin"?"badge-danger":r=="Partner"?"badge-warning":"badge-info")" style="margin-right:4px;">@r</span>
+                            }
+                            @if (!roles.Any()) { <span style="color:var(--text-secondary); font-size:12px;">未指派</span> }
+                        </td>
+                        <td>
+                            @if (u.EmailConfirmed) {
+                                <span class="badge badge-success">已驗證</span>
+                            } else {
+                                <span class="badge badge-warning">未驗證</span>
+                            }
+                        </td>
+                        <td>
+                            @if (isLocked) {
+                                <span class="badge badge-danger">已停權</span>
+                            } else {
+                                <span class="badge badge-success">正常</span>
+                            }
+                        </td>
+                        <td style="font-size:12px; color:var(--text-secondary);">@u.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <form asp-action="SetUserRole" method="post" style="display:flex; gap:4px; margin:0;">
+                                    <input type="hidden" name="userId" value="@u.Id" />
+                                    <select name="role" style="padding:4px 8px; font-size:12px; width:auto;">
+                                        <option value="">一般會員</option>
+                                        <option value="Partner" selected="@(roles.Contains("Partner") && !roles.Contains("Admin") ? "selected" : null)">Partner</option>
+                                        <option value="Admin" selected="@(roles.Contains("Admin") ? "selected" : null)">Admin</option>
+                                    </select>
+                                    <button type="submit" class="btn-secondary" style="padding:4px 10px; font-size:12px;">設定角色</button>
+                                </form>
+                                <form asp-action="LockUser" method="post" style="margin:0;">
+                                    <input type="hidden" name="userId" value="@u.Id" />
+                                    <input type="hidden" name="locked" value="@(!isLocked)" />
+                                    <button type="submit" class="@(isLocked ? "btn-primary" : "btn-danger")" style="padding:4px 10px; font-size:12px;">
+                                        @(isLocked ? "解鎖" : "停權")
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (totalPages > 1) {
+            <div class="pagination">
+                @if (currentPage > 1) { <a href="?page=@(currentPage-1)&keyword=@keyword">&laquo;</a> }
+                @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++) {
+                    if (i == currentPage) { <span class="active">@i</span> }
+                    else { <a href="?page=@i&keyword=@keyword">@i</a> }
+                }
+                @if (currentPage < totalPages) { <a href="?page=@(currentPage+1)&keyword=@keyword">&raquo;</a> }
+            </div>
+        }
+    }
+</div>
